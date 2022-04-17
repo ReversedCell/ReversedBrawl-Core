@@ -2,7 +2,7 @@
 An open source core of Brawl Stars server
 
 ### ReversedBrawl - Project
-**ReversedBrawl** is a ***lighweight*** Supercell game server written by XeonDev in **pure C++**
+**ReversedBrawl** is a ***lightweight*** Supercell game server written by XeonDev in **pure C++**
 
 ## Requirements
 - a brain
