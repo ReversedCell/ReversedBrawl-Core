@@ -16,4 +16,4 @@ This is a core of server. So you need to implement all messages and logic by you
 
 #### Need help? Join my [discord server](https://discord.gg/FqZda2BVYZ)
 
-![Alt text](/screenshots/console.png?raw=true)
+![screenshot](/screenshots/console.png?raw=true)
