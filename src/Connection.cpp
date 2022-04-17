@@ -13,6 +13,7 @@ Connection::~Connection() {
     this->fd = 0;
     this->open = false;
     delete this->messaging;
+    delete this->messageManager;
 }
 
 bool Connection::isOpen() {
