@@ -5,7 +5,7 @@ int Debugger::warningCount = 0;
 int Debugger::errorCount = 0;
 
 void Debugger::print(const char* log) {
-    printf("%s%s%s", "[info] ", log, "\n");
+    printf("%s%s%s", "[debug] ", log, "\n");
 }
 
 void Debugger::warning(const char* log) {
