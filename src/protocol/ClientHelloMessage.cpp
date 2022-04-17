@@ -18,7 +18,7 @@ ClientHelloMessage::~ClientHelloMessage() {
 
 void ClientHelloMessage::encode() {
     stream->writeInt(protocol);
-    stream->writeBoolean(keyVersion);
+    stream->writeInt(keyVersion);
     stream->writeInt(clientMajor);
     stream->writeInt(clientMinor);
     stream->writeInt(clientBuild);
