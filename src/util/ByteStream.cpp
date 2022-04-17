@@ -54,17 +54,24 @@ void ByteStream::ensureCapacity(int capacity) {
         memcpy(tmpBuffer, this->buffer, this->length);
         delete[] this->buffer;
         this->buffer = tmpBuffer;
+        this->length = bufferLength + capacity + 100;
     }
 }
 
 // Read Methods
 char ByteStream::readByte() {
     this->bitOffset = 0;
+    if (isAtEnd()) {
+        return 0;
+    }
     return buffer[offset++];
 }
 
 bool ByteStream::readBoolean() {
     if (this->bitOffset == 0) {
+        if (isAtEnd()) {
+            return false;
+        }
         ++this->offset;
     }
 
@@ -75,20 +82,26 @@ bool ByteStream::readBoolean() {
 
 short ByteStream::readShort() {
     this->bitOffset = 0;
+    if (offset + 2 - 1> length) {
+        return 0;
+    }
 
     short retval = (short) ((this->buffer[this->offset] << 8) |
-                            this->buffer[this->offset+1]);
+                            this->buffer[this->offset+1] & 0xFF);
     this->offset += 2;
     return retval;
 }
 
 int ByteStream::readInt() {
     this->bitOffset = 0;
+    if (offset + 4 - 1 > length) {
+        return 0;
+    }
 
     int retval = (this->buffer[this->offset] << 24) |
                    (this->buffer[this->offset+1] << 16) |
                    (this->buffer[this->offset+2] << 8) |
-                   this->buffer[this->offset+3];
+                   this->buffer[this->offset+3] & 0xFF;
     this->offset += 4;
     return retval;
 }
@@ -96,6 +109,11 @@ int ByteStream::readInt() {
 int ByteStream::readVInt() {
     this->bitOffset = 0;
     int value = 0;
+
+    if (offset > length) {
+        return 0;
+    }
+
     unsigned char byteValue = this->buffer[this->offset];
     this->offset++;
 
@@ -105,21 +123,37 @@ int ByteStream::readVInt() {
 
         if ((byteValue & 0x80) != 0)
         {
+            if (offset > length) {
+                return 0;
+            }
+
             value |= ((byteValue = this->buffer[this->offset]) & 0x7F) << 6;
             this->offset++;
 
             if ((byteValue & 0x80) != 0)
             {
+                if (offset > length) {
+                    return 0;
+                }
+
                 value |= ((byteValue = this->buffer[this->offset]) & 0x7F) << 13;
                 this->offset++;
 
                 if ((byteValue & 0x80) != 0)
                 {
+                    if (offset > length) {
+                        return 0;
+                    }
+
                     value |= ((byteValue = this->buffer[this->offset]) & 0x7F) << 20;
                     this->offset++;
 
                     if ((byteValue & 0x80) != 0)
                     {
+                        if (offset > length) {
+                            return 0;
+                        }
+
                         value |= ((byteValue = this->buffer[this->offset]) & 0x7F) << 27;
                         this->offset++;
                         return (int) (value | 0x80000000);
@@ -141,21 +175,37 @@ int ByteStream::readVInt() {
 
     if ((byteValue & 0x80) != 0)
     {
+        if (offset > length) {
+            return 0;
+        }
+
         value |= ((byteValue = this->buffer[this->offset]) & 0x7F) << 6;
         this->offset++;
 
         if ((byteValue & 0x80) != 0)
         {
+            if (offset > length) {
+                return 0;
+            }
+
             value |= ((byteValue = this->buffer[this->offset]) & 0x7F) << 13;
             this->offset++;
 
             if ((byteValue & 0x80) != 0)
             {
+                if (offset > length) {
+                    return 0;
+                }
+
                 value |= ((byteValue = this->buffer[this->offset]) & 0x7F) << 20;
                 this->offset++;
 
                 if ((byteValue & 0x80) != 0)
                 {
+                    if (offset > length) {
+                        return 0;
+                    }
+
                     value |= ((byteValue = this->buffer[this->offset]) & 0x7F) << 27;
                     this->offset++;
                 }
@@ -170,6 +220,10 @@ void ByteStream::readBytes(char* output, int length) {
     this->bitOffset = 0;
     if (length <= 0) return;
 
+    if (offset + length - 1 > this->length) {
+        return;
+    }
+
     if (length <= 900000) {
         memcpy(output, buffer + offset, length);
         this->offset += length;
@@ -178,6 +232,10 @@ void ByteStream::readBytes(char* output, int length) {
 
 char* ByteStream::readBytes(int length, int maxCapacity) {
     this->bitOffset = 0;
+
+    if (offset + length - 1 > this->length) {
+        return NULL;
+    }
 
     if (length <= -1) {
         return NULL;
@@ -196,6 +254,11 @@ char* ByteStream::readBytes(int length, int maxCapacity) {
 
 std::string* ByteStream::readString() {
     int length = this->readInt();
+
+    if (offset + length - 1 > this->length) {
+        return NULL;
+    }
+
     if (length < 0 || length > 900000) {
         return NULL;
     }
@@ -211,6 +274,11 @@ std::string* ByteStream::readString() {
 
 void ByteStream::readString(std::string* str) {
     int length = this->readInt();
+
+    if (offset + length - 1 > this->length) {
+        return;
+    }
+
     if (length < 0 || length > 900000) {
         return;
     }
